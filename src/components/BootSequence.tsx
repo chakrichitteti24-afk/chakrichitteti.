@@ -20,7 +20,9 @@ const sequenceLogs = [
 export function BootSequence({ onComplete }: BootSequenceProps) {
   const [skip, setSkip] = useState(false);
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
   const [showReveal, setShowReveal] = useState(false);
+  const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {
     // Check if user has already seen the boot sequence in this session
@@ -31,25 +33,40 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
       return;
     }
 
-    // Fast terminal log sequence (approx 1.5 seconds total for logs)
     if (currentLineIndex < sequenceLogs.length) {
-      const timer = setTimeout(() => {
-        setCurrentLineIndex((prev) => prev + 1);
-      }, 150); // fast log reveal
-      return () => clearTimeout(timer);
+      const targetText = sequenceLogs[currentLineIndex];
+      
+      if (displayedText.length < targetText.length) {
+        // Typing effect: add character every ~15ms
+        setIsTyping(true);
+        const timer = setTimeout(() => {
+          setDisplayedText(targetText.slice(0, displayedText.length + 1));
+        }, 15);
+        return () => clearTimeout(timer);
+      } else {
+        // Line finished typing. Pause before next line.
+        setIsTyping(false);
+        const timer = setTimeout(() => {
+          setCurrentLineIndex((prev) => prev + 1);
+          setDisplayedText("");
+        }, 350); // 350ms pause after each line
+        return () => clearTimeout(timer);
+      }
     } else if (!showReveal) {
-      // Small pause before revealing the final card
-      const timer = setTimeout(() => setShowReveal(true), 200);
+      // All lines typed ("Access Granted" shown). Pause 800ms before reveal.
+      const timer = setTimeout(() => {
+        setShowReveal(true);
+      }, 800);
       return () => clearTimeout(timer);
     } else {
-      // Hold the final reveal for 1.5 seconds, then complete
+      // Show the Chakri Chitteti reveal card for 1.8 seconds, then finish
       const timer = setTimeout(() => {
         sessionStorage.setItem("bootComplete", "true");
         onComplete();
-      }, 1500);
+      }, 1800);
       return () => clearTimeout(timer);
     }
-  }, [currentLineIndex, showReveal, onComplete]);
+  }, [currentLineIndex, displayedText, showReveal, onComplete]);
 
   if (skip) return null;
 
@@ -57,7 +74,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
+      transition={{ duration: 1, ease: "easeInOut" }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-background text-primary font-mono overflow-hidden"
     >
       <AnimatePresence mode="wait">
@@ -66,32 +83,32 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             key="terminal"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-3xl px-6 md:px-12 flex flex-col justify-end min-h-[300px]"
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full max-w-3xl px-6 md:px-12 flex flex-col justify-end min-h-[350px]"
           >
+            {/* Completed Lines (Dimmed) */}
             {sequenceLogs.slice(0, currentLineIndex).map((log, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.1 }}
-                className="text-secondary/80 md:text-lg mb-2 flex items-start gap-2"
-              >
-                <span className="text-accent shrink-0">{">"}</span>
-                <span className={log === "Access Granted." || log === "Authentication Successful." ? "text-accent font-medium" : ""}>
+              <div key={i} className="mb-2 flex items-start gap-2">
+                <span className="text-accent/50 shrink-0">{">"}</span>
+                <span className={log === "Access Granted." || log === "Authentication Successful." ? "text-accent/80 font-medium" : "text-secondary/50"}>
                   {log}
                 </span>
-              </motion.div>
+              </div>
             ))}
             
-            {/* Blinking Cursor on active line */}
+            {/* Current Typing Line */}
             {currentLineIndex < sequenceLogs.length && (
-              <div className="text-secondary/80 md:text-lg mb-2 flex items-start gap-2">
+              <div className="md:text-lg mb-2 flex items-start gap-2">
                 <span className="text-accent shrink-0">{">"}</span>
+                <span className={sequenceLogs[currentLineIndex] === "Access Granted." || sequenceLogs[currentLineIndex] === "Authentication Successful." ? "text-accent font-medium shadow-[0_0_10px_rgba(0,255,136,0.5)]" : "text-primary"}>
+                  {displayedText}
+                </span>
+                
+                {/* Blinking Cursor */}
                 <motion.div
-                  animate={{ opacity: [1, 0] }}
-                  transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
-                  className="w-3 h-5 bg-accent"
+                  animate={{ opacity: isTyping ? 1 : [1, 0] }}
+                  transition={{ repeat: isTyping ? 0 : Infinity, duration: 0.8, ease: "linear" }}
+                  className="w-3 h-5 md:h-6 bg-accent ml-1 translate-y-[2px]"
                 />
               </div>
             )}
@@ -101,7 +118,7 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             key="reveal"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center px-6"
           >
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 text-primary">
@@ -118,9 +135,9 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             </div>
             
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
               className="inline-flex items-center gap-2 px-4 py-2 border border-accent/20 bg-accent/5 rounded-full"
             >
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
