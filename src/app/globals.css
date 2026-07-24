@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0A0A0A;
+  --color-foreground: #FFFFFF;
+  --color-card: #111111;
+  --color-border: #242424;
+  --color-primary: #FFFFFF;
+  --color-secondary: #A0A0A0;
+  --color-accent: #00FF88;
+}
+
+/* Fluid Typography Utilities */
+@layer utilities {
+  .text-fluid-h1 {
+    font-size: clamp(2.5rem, 6vw + 1rem, 5.5rem);
+    line-height: 1.1;
+  }
+  .text-fluid-h2 {
+    font-size: clamp(2rem, 4vw + 1rem, 4rem);
+    line-height: 1.2;
+  }
+  .text-fluid-h3 {
+    font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+    line-height: 1.3;
+  }
+  .text-fluid-p {
+    font-size: clamp(1rem, 1vw + 0.75rem, 1.25rem);
+    line-height: 1.6;
+  }
+}
+
+@layer base {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    /* grid background pattern */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center center;
+    background-attachment: fixed;
+  }
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-background);
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
