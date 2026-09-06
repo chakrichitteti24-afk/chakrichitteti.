@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { BootSequence } from "@/components/BootSequence";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 // Dynamically import below-the-fold components for code splitting & lazy loading
 const About = dynamic(() => import("@/components/About").then(mod => mod.About), { ssr: true });
@@ -17,15 +19,25 @@ const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Foote
 export default function Home() {
   const [bootComplete, setBootComplete] = useState(false);
 
+  const handleReplayBoot = useCallback(() => {
+    sessionStorage.removeItem("bootComplete");
+    setBootComplete(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   return (
     <>
+      <SmoothScroll />
+      
+      {/* GPU-composited fixed background prevents repaint on scroll */}
+      <div className="fixed-ambient-bg" aria-hidden="true" />
+
       {!bootComplete && (
         <BootSequence onComplete={() => setBootComplete(true)} />
       )}
       
       {/* 
-        We use a wrapper that changes opacity based on bootComplete 
-        to create a smooth transition from the boot sequence to the site.
+        Smooth transition from boot sequence to site
       */}
       <div 
         className={`transition-opacity duration-1000 w-full overflow-x-hidden ${
@@ -41,7 +53,8 @@ export default function Home() {
           <CipherFlux />
           <Contact />
         </main>
-        <Footer />
+        <Footer onReplayBoot={handleReplayBoot} />
+        <ScrollToTop />
       </div>
     </>
   );

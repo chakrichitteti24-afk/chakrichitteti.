@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,15 @@ export const metadata: Metadata = {
   title: "Chakri Chitteti | CEO & Founder at CipherFlux Labs",
   description: "Building secure AI systems and next-generation cybersecurity solutions. AI Engineer, Cybersecurity Enthusiast, Future OSCP Professional.",
   keywords: ["Chakri Chitteti", "CipherFlux Labs", "AI Engineer", "Cybersecurity", "OSCP", "Portfolio"],
+  authors: [{ name: "Chakri Chitteti", url: "https://cipherflux-labs.vercel.app/" }],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#08090A",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
