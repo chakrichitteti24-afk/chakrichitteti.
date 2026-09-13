@@ -165,9 +165,9 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center px-4 sm:px-6"
           >
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter mb-4 text-primary">
+            <div role="presentation" className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter mb-4 text-primary">
               Chakri Chitteti<span className="text-accent">.</span>
-            </h1>
+            </div>
             
             <div className="space-y-2 mb-8">
               <p className="text-lg sm:text-xl md:text-2xl text-secondary font-sans font-light tracking-wide">
